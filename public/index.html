@@ -3,228 +3,334 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Keras Vision Classifier</title>
+    <title>VisionTensor Lab · Keras CIFAR-10 Browser Inference</title>
     <style>
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        background: #071013;
+        background: #07050d;
+        background-image: radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.14), transparent 38%),
+          radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.1), transparent 42%);
         color: #f8fafc;
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      main {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
         min-height: 100vh;
-        display: grid;
-        grid-template-columns: 0.9fr 1.1fr;
-        gap: 32px;
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 38px 20px;
-        align-items: center;
       }
-      .pill {
+      header {
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        background: rgba(11, 7, 22, 0.85);
+        backdrop-filter: blur(12px);
+      }
+      .header-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(219, 39, 119, 0.2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: #d8b4fe;
+      }
+      .badge {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        border: 1px solid rgba(125, 211, 252, 0.35);
-        background: rgba(125, 211, 252, 0.1);
-        color: #dff7ff;
-        padding: 9px 14px;
+        gap: 6px;
+        padding: 4px 10px;
         border-radius: 999px;
-        font-size: 14px;
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        background: rgba(88, 28, 135, 0.45);
+        color: #e9d5ff;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 600;
       }
-      h1 {
-        font-size: clamp(44px, 7vw, 84px);
-        line-height: 0.95;
-        margin: 22px 0 0;
-        letter-spacing: 0;
-      }
-      p {
-        color: #cbd5e1;
-        line-height: 1.75;
-        font-size: 18px;
-      }
-      .metrics,
-      .actions {
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-top: 28px;
+        grid-template-columns: 420px 1fr;
+        gap: 24px;
       }
-      .metric,
-      .panel,
-      .preview,
-      .note {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.045);
-        border-radius: 8px;
+      .card {
+        background: rgba(14, 9, 29, 0.92);
+        border: 1px solid rgba(168, 85, 247, 0.22);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      }
+      .section-label {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #c084fc;
+        margin-bottom: 12px;
+        display: block;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
       }
       .metric {
+        background: rgba(14, 9, 29, 0.92);
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        border-radius: 16px;
         padding: 16px;
       }
       .metric span {
         display: block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        text-transform: uppercase;
         color: #94a3b8;
-        font-size: 13px;
       }
       .metric strong {
         display: block;
         margin-top: 8px;
-        color: #bae6fd;
-        font-size: 24px;
+        font-size: 22px;
+        font-weight: 900;
+        color: #ffffff;
       }
-      .actions {
+      .preview-grid {
+        display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .preview-box {
+        height: 190px;
+        border-radius: 12px;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        background: #080511;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .preview-box img,
+      .preview-box canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+      .preview-caption {
+        position: absolute;
+        bottom: 6px;
+        left: 8px;
+        right: 8px;
+        background: rgba(7, 5, 13, 0.82);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-family: ui-monospace, monospace;
+        font-size: 10px;
+        color: #d8b4fe;
+        text-align: center;
+      }
+      .btn-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
       }
       button {
         border: 0;
-        border-radius: 6px;
-        padding: 14px 18px;
+        border-radius: 12px;
+        padding: 12px 16px;
         font: inherit;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .primary {
-        background: #7dd3fc;
-        color: #071013;
-      }
-      .secondary {
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        background: transparent;
-        color: #e2e8f0;
-      }
-      .status {
-        margin-top: 16px;
-        color: #94a3b8;
-        font-size: 14px;
-      }
-      .right {
-        display: grid;
-        gap: 18px;
-      }
-      .preview {
-        min-height: 430px;
-        overflow: hidden;
-        display: grid;
-        place-items: center;
-        background: #102027;
-      }
-      .preview img {
-        width: 100%;
-        height: 430px;
-        object-fit: cover;
-      }
-      .empty {
-        color: #94a3b8;
-        text-align: center;
-      }
-      .panel {
-        padding: 20px;
-      }
-      .panel-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-      .top {
-        display: none;
-        background: #86efac;
-        color: #071013;
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-weight: 900;
         font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: linear-gradient(90deg, #a855f7, #ec4899);
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(168, 85, 247, 0.25);
+      }
+      .btn-secondary {
+        background: #080511;
+        color: #e2e8f0;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+      }
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .preset-btn {
+        background: #080511;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        color: #e2e8f0;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 12px;
+        text-align: left;
+      }
+      .preset-btn:hover {
+        border-color: #a855f7;
+        background: rgba(88, 28, 135, 0.25);
       }
       .row {
-        margin: 12px 0;
+        margin-bottom: 12px;
+        background: #080511;
+        border: 1px solid rgba(168, 85, 247, 0.15);
+        border-radius: 10px;
+        padding: 10px 12px;
       }
       .row-label {
         display: flex;
         justify-content: space-between;
-        color: #dbeafe;
-        font-size: 14px;
-        text-transform: capitalize;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
       }
       .bar {
         height: 8px;
-        background: rgba(255, 255, 255, 0.1);
         border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
         overflow: hidden;
       }
       .fill {
         height: 100%;
-        min-width: 2%;
-        background: #7dd3fc;
         border-radius: inherit;
+        background: linear-gradient(90deg, #a855f7, #ec4899);
       }
-      .note {
-        color: #d1fae5;
-        background: rgba(52, 211, 153, 0.1);
-        border-color: rgba(52, 211, 153, 0.25);
-        padding: 16px;
-        line-height: 1.6;
-        font-size: 14px;
-      }
-      input {
+      input[type="file"] {
         display: none;
       }
-      @media (max-width: 900px) {
+      @media (max-width: 960px) {
         main {
           grid-template-columns: 1fr;
         }
-        .metrics,
-        .actions {
-          grid-template-columns: 1fr;
+        .metrics {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
     </style>
   </head>
   <body>
-    <main>
-      <section>
-        <div class="pill">Real Keras model trained on CIFAR-10</div>
-        <h1>Mobile Vision Classifier</h1>
-        <p>
-          Upload any image and the app resizes it to the same 16x16 RGB representation used during training, then runs
-          the exported Keras dense network directly in the browser.
-        </p>
-        <div class="metrics">
-          <div class="metric"><span>Dataset</span><strong id="dataset">Loading</strong></div>
-          <div class="metric"><span>Accuracy</span><strong id="accuracy">--</strong></div>
-          <div class="metric"><span>Macro F1</span><strong id="f1">--</strong></div>
-        </div>
-        <div class="actions">
-          <button class="primary" id="upload">Upload Image</button>
-          <button class="secondary" id="reset">Reset</button>
-        </div>
-        <div class="status" id="status">Loading trained Keras model</div>
-        <input id="file" type="file" accept="image/*" />
-      </section>
-      <section class="right">
-        <div class="preview" id="preview"><div class="empty">Your uploaded image appears here</div></div>
-        <div class="panel">
-          <div class="panel-head">
-            <strong>Prediction probabilities</strong>
-            <span class="top" id="top"></span>
+    <header>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon">CV</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <strong style="font-size:18px">VisionTensor CIFAR-10 Workbench</strong>
+              <span class="badge">Keras 16×16×3 Browser Engine</span>
+            </div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:2px">
+              Client-Side Spatial Downsampling (768 RGB Tensor) · Dense(192) → Dense(96) → Softmax(10)
+            </div>
           </div>
-          <div id="predictions"></div>
         </div>
-        <div class="note">This is a real exported neural network. The app does not call an API or use fixed suggestions.</div>
+        <div class="badge" id="status">Loading trained Keras weights...</div>
+      </div>
+    </header>
+
+    <main>
+      <aside style="display:flex;flex-direction:column;gap:20px">
+        <div class="card">
+          <span class="section-label">Input Image & 16×16 Tensor Quantization</span>
+          <div class="preview-grid">
+            <div class="preview-box" id="preview">
+              <span style="font-size:12px;color:#64748b;padding:12px;text-align:center">Source Image</span>
+              <div class="preview-caption">Original Resolution</div>
+            </div>
+            <div class="preview-box">
+              <canvas id="tensorCanvas" width="16" height="16"></canvas>
+              <div class="preview-caption">16×16 RGB Tensor (768D)</div>
+            </div>
+          </div>
+
+          <input id="file" type="file" accept="image/*" />
+          <div class="btn-row">
+            <button class="btn-primary" id="upload">Upload Image</button>
+            <button class="btn-secondary" id="reset">Reset Tensor</button>
+          </div>
+
+          <div style="margin-top:18px">
+            <span class="section-label">Instant Synthetic Test Tensors</span>
+            <div class="preset-grid">
+              <button class="preset-btn" data-preset="ship">🚢 Maritime Horizon (Ship / Plane)</button>
+              <button class="preset-btn" data-preset="forest">🦌 Woodland Foliage (Deer / Frog)</button>
+              <button class="preset-btn" data-preset=" tarmac">🚗 Asphalt & Chrome (Auto / Truck)</button>
+              <button class="preset-btn" data-preset="warm">🐕 Warm Fur Texture (Dog / Cat)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="section-label">RGB Channel Energy Telemetry</span>
+          <div id="channelStats" style="font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1;line-height:1.8">
+            Select an image or synthetic preset to inspect mean R/G/B normalized activations.
+          </div>
+        </div>
+      </aside>
+
+      <section>
+        <div class="metrics">
+          <div class="metric"><span>Benchmark Corpus</span><strong id="dataset">CIFAR-10</strong></div>
+          <div class="metric"><span>Test Accuracy</span><strong id="accuracy">--</strong></div>
+          <div class="metric"><span>Macro F1 Score</span><strong id="f1">--</strong></div>
+          <div class="metric"><span>Top Prediction</span><strong id="top" style="color:#d8b4fe">Waiting</strong></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span class="section-label" style="margin:0">10-Class Softmax Posterior Ranking</span>
+            <span id="latencyBadge" class="badge">0.0 ms forward pass</span>
+          </div>
+          <div id="rows"></div>
+        </div>
       </section>
     </main>
+
     <script>
       let model = null
-      const classesContainer = document.getElementById("predictions")
+      const fileEl = document.getElementById("file")
+      const previewEl = document.getElementById("preview")
+      const tensorCanvas = document.getElementById("tensorCanvas")
+      const rowsEl = document.getElementById("rows")
       const statusEl = document.getElementById("status")
       const topEl = document.getElementById("top")
-      const previewEl = document.getElementById("preview")
-      const fileEl = document.getElementById("file")
+      const latencyEl = document.getElementById("latencyBadge")
+      const channelStatsEl = document.getElementById("channelStats")
+
+      function relu(values) {
+        return values.map((v) => Math.max(0, v))
+      }
+
+      function softmax(values) {
+        const max = Math.max(...values)
+        const exp = values.map((v) => Math.exp(v - max))
+        const total = exp.reduce((s, v) => s + v, 0)
+        return exp.map((v) => v / total)
+      }
 
       function dense(input, kernel, bias) {
         const output = new Array(bias.length).fill(0)
@@ -236,92 +342,116 @@
         return output
       }
 
-      function relu(values) {
-        return values.map((value) => Math.max(0, value))
-      }
-
-      function softmax(values) {
-        const max = Math.max(...values)
-        const exp = values.map((value) => Math.exp(value - max))
-        const total = exp.reduce((sum, value) => sum + value, 0)
-        return exp.map((value) => value / total)
-      }
-
       function renderRows(rows) {
-        classesContainer.innerHTML = rows
+        rowsEl.innerHTML = rows
           .map(
-            (item) => `
-              <div class="row">
-                <div class="row-label"><span>${item.label}</span><span>${(item.score * 100).toFixed(1)}%</span></div>
-                <div class="bar"><div class="fill" style="width:${Math.max(2, item.score * 100)}%"></div></div>
+            (row, idx) => `
+              <div class="row" style="${idx === 0 && row.score > 0 ? "border-color:rgba(168,85,247,0.55);background:rgba(88,28,135,0.22)" : ""}">
+                <div class="row-label">
+                  <span style="font-weight:700;color:#fff">${idx + 1}. ${row.label}</span>
+                  <span style="color:#d8b4fe;font-weight:700">${(row.score * 100).toFixed(1)}%</span>
+                </div>
+                <div class="bar"><div class="fill" style="width:${Math.max(2, row.score * 100)}%"></div></div>
               </div>
-            `,
+            `
           )
           .join("")
       }
 
-      async function imageToFeatures(file) {
-        const bitmap = await createImageBitmap(file)
-        const canvas = document.createElement("canvas")
-        canvas.width = 16
-        canvas.height = 16
-        const context = canvas.getContext("2d")
-        context.drawImage(bitmap, 0, 0, 16, 16)
-        const pixels = context.getImageData(0, 0, 16, 16).data
+      function extractFromCanvas() {
+        const ctx = tensorCanvas.getContext("2d")
+        const pixels = ctx.getImageData(0, 0, 16, 16).data
         const features = []
+        let rSum = 0, gSum = 0, bSum = 0
         for (let i = 0; i < pixels.length; i += 4) {
-          features.push(pixels[i] / 255, pixels[i + 1] / 255, pixels[i + 2] / 255)
+          const r = pixels[i] / 255
+          const g = pixels[i + 1] / 255
+          const b = pixels[i + 2] / 255
+          rSum += r; gSum += g; bSum += b
+          features.push(r, g, b)
         }
+        const n = 256
+        channelStatsEl.innerHTML = `
+          <div>Mean Red Channel:   <strong>${(rSum / n).toFixed(3)}</strong></div>
+          <div>Mean Green Channel: <strong>${(gSum / n).toFixed(3)}</strong></div>
+          <div>Mean Blue Channel:  <strong>${(bSum / n).toFixed(3)}</strong></div>
+          <div>Tensor Shape:       <strong>[1, 16, 16, 3] → 768 floats</strong></div>
+        `
         return features
       }
 
       function runModel(features) {
+        const t0 = performance.now()
         const w = model.weights
         const h1 = relu(dense(features, w.dense1_kernel, w.dense1_bias))
         const h2 = relu(dense(h1, w.dense2_kernel, w.dense2_bias))
         const probabilities = softmax(dense(h2, w.out_kernel, w.out_bias))
+        const dt = (performance.now() - t0).toFixed(2)
+        latencyEl.textContent = `${dt} ms forward pass`
         return model.classes
           .map((label, index) => ({ label, score: probabilities[index] }))
           .sort((a, b) => b.score - a.score)
       }
 
-      async function classify(file) {
+      async function classifyFile(file) {
         if (!model) return
-        statusEl.textContent = "Reading image and running browser inference"
         const url = URL.createObjectURL(file)
-        previewEl.innerHTML = `<img src="${url}" alt="Uploaded preview" />`
-        const rows = runModel(await imageToFeatures(file))
+        previewEl.innerHTML = `<img src="${url}" alt="Uploaded preview" /><div class="preview-caption">Original Resolution</div>`
+        const bitmap = await createImageBitmap(file)
+        const ctx = tensorCanvas.getContext("2d")
+        ctx.drawImage(bitmap, 0, 0, 16, 16)
+        const rows = runModel(extractFromCanvas())
         renderRows(rows)
-        topEl.style.display = "inline-block"
-        topEl.textContent = `${rows[0].label} ${(rows[0].score * 100).toFixed(0)}%`
-        statusEl.textContent = "Prediction complete"
+        topEl.textContent = `${rows[0].label} (${(rows[0].score * 100).toFixed(0)}%)`
+        statusEl.textContent = "Inference complete"
+      }
+
+      function drawPreset(type) {
+        if (!model) return
+        const ctx = tensorCanvas.getContext("2d")
+        for (let y = 0; y < 16; y++) {
+          for (let x = 0; x < 16; x++) {
+            if (type === "ship") {
+              ctx.fillStyle = y < 8 ? `rgb(135, 195, 250)` : y < 11 && x > 4 && x < 12 ? `rgb(230, 235, 240)` : `rgb(20, 75, 140)`
+            } else if (type === "forest") {
+              ctx.fillStyle = (x + y) % 3 === 0 ? `rgb(45, 135, 55)` : `rgb(85, 110, 45)`
+            } else if (type.trim() === "tarmac") {
+              ctx.fillStyle = y > 5 && y < 12 && x > 2 && x < 14 ? `rgb(200, 45, 55)` : `rgb(55, 60, 70)`
+            } else {
+              ctx.fillStyle = x > 3 && x < 13 && y > 2 && y < 14 ? `rgb(185, 130, 85)` : `rgb(90, 70, 60)`
+            }
+            ctx.fillRect(x, y, 1, 1)
+          }
+        }
+        const dataUrl = tensorCanvas.toDataURL()
+        previewEl.innerHTML = `<img src="${dataUrl}" alt="Synthetic tensor" /><div class="preview-caption">Synthetic Pattern</div>`
+        const rows = runModel(extractFromCanvas())
+        renderRows(rows)
+        topEl.textContent = `${rows[0].label} (${(rows[0].score * 100).toFixed(0)}%)`
+        statusEl.textContent = `Evaluated "${type.trim()}" synthetic tensor`
       }
 
       fetch("/model/cifar10_classifier.json")
-        .then((response) => response.json())
+        .then((r) => r.json())
         .then((loaded) => {
           model = loaded
           document.getElementById("dataset").textContent = model.metrics.dataset
           document.getElementById("accuracy").textContent = `${(model.metrics.accuracy * 100).toFixed(1)}%`
           document.getElementById("f1").textContent = `${(model.metrics.macro_f1 * 100).toFixed(1)}%`
-          renderRows(model.classes.map((label) => ({ label, score: 0 })))
-          statusEl.textContent = "Upload a photo to test the model"
-        })
-        .catch(() => {
-          statusEl.textContent = "Model artifact is missing. Run the training script first."
+          statusEl.textContent = "Weights Loaded · Ready"
+          drawPreset("ship")
         })
 
       document.getElementById("upload").addEventListener("click", () => fileEl.click())
-      fileEl.addEventListener("change", (event) => {
-        const file = event.target.files && event.target.files[0]
-        if (file) classify(file)
+      fileEl.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0]
+        if (file) classifyFile(file)
+      })
+      document.querySelectorAll("[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => drawPreset(btn.getAttribute("data-preset")))
       })
       document.getElementById("reset").addEventListener("click", () => {
-        previewEl.innerHTML = '<div class="empty">Your uploaded image appears here</div>'
-        topEl.style.display = "none"
-        if (model) renderRows(model.classes.map((label) => ({ label, score: 0 })))
-        statusEl.textContent = "Upload a photo to test the model"
-        fileEl.value = ""
+        drawPreset("ship")
       })
     </script>
   </body>
